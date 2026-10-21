@@ -39,8 +39,65 @@ class MainActivity : AppCompatActivity() {
         btnTambah.setOnClickListener {
             val dtAkhir = Integer.parseInt(data.get(data.size - 1)) + 1
             data.add("$dtAkhir")
-            
+
             lvAdapter.notifyDataSetChanged()
         }
+
+        lv1.setOnItemClickListener { parent, view, position, id ->
+            android.widget.Toast.makeText(
+                this,
+                data[position],
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        val gestureDetector = android.view.GestureDetector(
+            this,
+            object : android.view.GestureDetector.SimpleOnGestureListener() {
+                override fun onDoubleTap(e: android.view.MotionEvent): Boolean {
+                    val position = lv1.pointToPosition(e.x.toInt(), e.y.toInt())
+                    if (position != ListView.INVALID_POSITION) {
+                        val selectedItem = data[position]
+                        showActionDialog(position, selectedItem, data, lvAdapter)
+                    }
+                    return true
+                }
+            }
+        )
+
+        lv1.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            false
+        }
+    }
+
+    private fun showActionDialog(
+        position: Int,
+        selectedItem: String,
+        data: MutableList<String>,
+        adapter: ArrayAdapter<String>
+    ) {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        builder.setTitle("ITEM $selectedItem")
+        builder.setMessage("Pilih tindakan yang ingin dilakukan:")
+
+        builder.setPositiveButton("Update") { _, _ ->
+        }
+
+        builder.setNegativeButton("Hapus") { _, _ ->
+            data.removeAt(position)
+            adapter.notifyDataSetChanged()
+            android.widget.Toast.makeText(
+                this,
+                "Hapus Item $selectedItem",
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        builder.setNeutralButton("Batal") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        builder.create().show()
     }
 }
